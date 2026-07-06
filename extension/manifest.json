@@ -1,0 +1,17 @@
+{
+  "name": "SimpleLens",
+  "description": "Know what you're agreeing to.",
+  "version": "0.0.1",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {}
+  },
+  "icons": {},
+  "content_scripts": [],
+  "host_permissions": ["https://*/"]
+}
