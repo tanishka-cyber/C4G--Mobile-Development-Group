@@ -23,7 +23,7 @@ client = Groq(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "chrome-extension://pegnhhobmmkkhlndochgnjnbeneoimjk",
+        "chrome-extension://inakldcfkbaplcghkchcpahiofnambdc",
     ],
     allow_credentials=True,
     allow_methods=["*"],
