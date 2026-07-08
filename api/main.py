@@ -8,6 +8,8 @@ import json
 import copy
 from pypdf import PdfReader
 import io
+import requests
+from bs4 import BeautifulSoup
 
 class URLRequest(BaseModel):
     url: str
@@ -75,6 +77,42 @@ data = {
 def apiInfo():
     return {"active": True}
 
+def extract_text_from_url(url: str):
+    try:
+        response = requests.get(
+            url,
+            timeout = 10,
+            headers={
+                "User-Agent":"Mozilla/5.0"
+            }
+        )
+
+        soup = BeautifulSoup(
+            response.text,
+            "html.parser"
+        )
+        # Remove unnecessary webpage elements
+        for element in soup(
+            ["script", "style", "nav", "footer"]
+        ):
+            element.decompose()
+
+        text = soup.get_text(
+            separator="\n"
+        )
+        # Remove empty lines and clean text
+        cleaned_text = "\n".join(
+            line.strip()
+            for line in text.splitlines()
+            if line.strip()
+        )
+
+        return cleaned_text
+    
+    except Exception:
+        return None
+
+
 def get_color(score: int):
     score = max(0, min(100, score))
 
@@ -128,10 +166,19 @@ def get_short_score(score: int):
 def read_item(request: URLRequest):
     try:
         messages = copy.deepcopy(data['messages'])
+        website_text = extract_text_from_url(request.url)
+
+        if not website_text:
+            return{
+                "error_message": "Could not read webpage",
+                "success":False
+            }
+
         messages.append({
             "role": "user",
-            "content": "URL: " + request.url
+            "content": "Document contents: " + website_text
         })
+
         response = client.chat.completions.create(
             model=data['model'],
             temperature=data['temperature'],
