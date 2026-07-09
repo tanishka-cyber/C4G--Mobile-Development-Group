@@ -1,7 +1,8 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from groq import Groq
-import groq;
+from dotenv import load_dotenv
+import groq
 import os
 from pydantic import BaseModel
 import json
@@ -9,6 +10,9 @@ import copy
 from pypdf import PdfReader
 import io
 from url_extractor import extract_text_from_url
+
+load_dotenv()
+
 
 class URLRequest(BaseModel):
     url: str
@@ -132,7 +136,15 @@ def get_short_score(score: int):
 def read_item(request: URLRequest):
     try:
         messages = copy.deepcopy(data['messages'])
-        website_text = extract_text_from_url(request.url)
+        website_data = extract_text_from_url(request.url)
+
+        if not website_data:
+            return{
+                "error_message": "Could not read webpage",
+                "success":False
+            }
+
+        website_text = website_data["text"]
 
         if not website_text:
             return{
@@ -154,6 +166,10 @@ def read_item(request: URLRequest):
         result = json.loads(response.choices[0].message.content or "{}")
         return {
             "score": result['score'],
+            "title": website_data["title"],
+            "company": website_data["company"],
+            "word_count": website_data["word_count"],
+            "reading_time": website_data["reading_time"],
             "key_points": result['key_points'],
             "summary": result['summary'],
             "type": "url",
@@ -162,6 +178,7 @@ def read_item(request: URLRequest):
             "score_color": get_color(result['score']),
             "success": True
         }
+
     except groq.APIStatusError as e:
         return {
             "error_message": f"Failed to query AI (status code: {e.status_code})<br>{e.response}",
