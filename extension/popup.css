@@ -346,3 +346,25 @@ body {
     font-size: 1rem;
     color: white;
 }
+
+.metadata {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    padding: 12px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #202024;
+    border-radius: 8px;
+    color: white;
+}
+
+.metadata-title {
+    font-family: "Gemunu Libre";
+    font-size: 1.3rem;
+    border-bottom-style: solid;
+    border-width: 2px;
+    border-color: #202024;
+    padding-bottom: 6px;
+}

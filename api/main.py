@@ -196,7 +196,7 @@ def read_item(request: URLRequest):
         }
     except Exception as e:
         return {
-            "error_message": f"${e}",
+            "error_message": f"{e}",
             "success": False
         }
 

@@ -215,10 +215,39 @@ class AnalysisScreen extends Screen {
 		let summaryElement = document.createElement("p");
 		summaryElement.className = "summary";
 		summaryElement.textContent = currentAnalysis.summary;
+
+				// Website metadata section (URL analysis)
+		let metadata = document.createElement("div");
+		metadata.className = "metadata";
+
+		let metadataTitle = document.createElement("div");
+		metadataTitle.className = "metadata-title";
+		metadataTitle.textContent = "Website Information";
+
+		let websiteName = document.createElement("div");
+		websiteName.textContent = `Title: ${currentAnalysis.title || "Unknown"}`;
+
+		let companyName = document.createElement("div");
+		companyName.textContent = `Company: ${currentAnalysis.company || "Unknown"}`;
+
+		let wordCount = document.createElement("div");
+		wordCount.textContent = `Policy Length: ${currentAnalysis.word_count || 0} words`;
+
+		let readingTime = document.createElement("div");
+		readingTime.textContent = `Reading Time: ${currentAnalysis.reading_time || 0} minute(s)`;
+
+		metadata.appendChild(metadataTitle);
+		metadata.appendChild(websiteName);
+		metadata.appendChild(companyName);
+		metadata.appendChild(wordCount);
+		metadata.appendChild(readingTime);
+
+		contentElement.appendChild(metadata);
 		contentElement.appendChild(scoreBox);
 		contentElement.appendChild(scoreSummary);
 		contentElement.appendChild(keyPoints);
 		contentElement.appendChild(summaryElement);
+		
 		return contentElement;
 	}
 }
