@@ -124,6 +124,30 @@ If something is missing from the policy, mention that it is missing rather than 
                     "confidence": {
                         "description": "Confidence from 0-100 that the analysis is accurate",
                         "type": "integer"
+                    },
+                    "privacy_breakdown": {
+                        "description": "Category scores from 0-100 evaluating different privacy areas",
+                        "type": "object",
+                        "properties": {
+                            "Data Collection": {
+                                "type": "integer" 
+                            },
+                            "Transparency": {
+                                "type": "integer"
+                            },
+                            "Tracking": {
+                                "type": "integer"
+                            },
+                            "Security": {
+                                "type": "integer"
+                            },
+                            "User Rights": {
+                                "type": "integer"
+                            },
+                            "Third Parties": {
+                                "type": "integer"
+                            }
+                        }
                     }
                 }
             }
@@ -233,6 +257,7 @@ def read_item(request: URLRequest):
             "recommendations": result["recommendations"],
             "quick_facts": result["quick_facts"],
             "confidence": result["confidence"],
+            "privacy_breakdown": result["privacy_breakdown"],
 
             "type": "url",
             "short_score": get_short_score(result["score"]),
@@ -300,6 +325,7 @@ async def read_item(file: UploadFile = File(...)):
 
             "key_points": result["key_points"],
             "summary": result["summary"],
+            "privacy_breakdown": result["privacy_breakdown"],
 
             "risk_flags": result["risk_flags"],
             "recommendations": result["recommendations"],
@@ -312,7 +338,7 @@ async def read_item(file: UploadFile = File(...)):
             "score_color": get_color(result["score"]),
             "success": True
         }
-        
+
     except groq.APIStatusError as e:
         return {
             "error_message": f"Failed to query AI (status code: {e.status_code})<br>{e.response}",
