@@ -353,6 +353,8 @@ class AnalysisScreen extends Screen {
 
 		forgetButton.onclick = () => {
 			chrome.storage.session.remove("currentAnalysis");
+			
+			removeAnalysisTabs();
 
 			currentAnalysis = {};
 
