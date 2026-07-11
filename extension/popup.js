@@ -383,6 +383,22 @@ class AnalysisScreen extends Screen {
 
 contentElement.appendChild(downloadButton);
 
+let forgetButton = document.createElement("button");
+forgetButton.textContent = "Forget My Data 🗑️";
+forgetButton.className = "analyze-button";
+
+forgetButton.onclick = () => {
+	chrome.storage.session.remove("currentAnalysis");
+
+	currentAnalysis = {};
+
+	alert("Your analysis data has been deleted.");
+
+	tabs[0].show();
+};
+
+contentElement.appendChild(forgetButton);
+
 return contentElement;
 	}
 }
@@ -662,3 +678,7 @@ async function analyzeFile(file) {
 		return { success: false, error_message: "Failed to fetch analysis" };
 	}
 }
+
+window.addEventListener("unload", () => {
+	chrome.storage.session.remove("currentAnalysis");
+});
