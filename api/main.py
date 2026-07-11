@@ -37,7 +37,37 @@ data = {
     "messages": [
         {
             "role": "system",
-            "content": "You will be given a document to analyize for user privacy, security, best practices, user data collection, selling of user data, tracking, legal compliance, promises, amount of jargon, etc."
+            "content": """
+You are an expert privacy, cybersecurity, and legal policy analyzer.
+
+Analyze the document thoroughly.
+
+Score the document from 0-100 based on:
+- Privacy
+- Security
+- Transparency
+- User Rights
+- Data Collection
+- Data Sharing
+- Data Retention
+- Tracking Technologies
+- Legal Compliance
+- Readability
+
+Provide:
+- an overall score
+- a concise explanation of the score
+- 3-5 key points
+- a summary
+- important privacy risk flags
+- practical recommendations for the user
+- quick privacy facts
+- a confidence score from 0-100 based on how complete the document appears.
+
+Be objective.
+Do not invent information that is not present.
+If something is missing from the policy, mention that it is missing rather than assuming it exists.
+"""
         }
     ],
     "temperature": 0,
@@ -69,6 +99,31 @@ data = {
                     "summary": {
                         "description": "Summary of the document",
                         "type": "string"
+                    },
+                    "risk_flags": {
+                        "description": "Important privacy risks users should immediately notice",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "recommendations": {
+                        "description": "Specific actions the user should take",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "quick_facts": {
+                        "description": "Short yes/no privacy facts",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "confidence": {
+                        "description": "Confidence from 0-100 that the analysis is accurate",
+                        "type": "integer"
                     }
                 }
             }
@@ -165,17 +220,24 @@ def read_item(request: URLRequest):
         )
         result = json.loads(response.choices[0].message.content or "{}")
         return {
-            "score": result['score'],
+            "score": result["score"],
             "title": website_data["title"],
             "company": website_data["company"],
             "word_count": website_data["word_count"],
             "reading_time": website_data["reading_time"],
-            "key_points": result['key_points'],
-            "summary": result['summary'],
+
+            "key_points": result["key_points"],
+            "summary": result["summary"],
+
+            "risk_flags": result["risk_flags"],
+            "recommendations": result["recommendations"],
+            "quick_facts": result["quick_facts"],
+            "confidence": result["confidence"],
+
             "type": "url",
-            "short_score": get_short_score(result['score']),
-            "long_score": result['score_summary'],
-            "score_color": get_color(result['score']),
+            "short_score": get_short_score(result["score"]),
+            "long_score": result["score_summary"],
+            "score_color": get_color(result["score"]),
             "success": True
         }
 
@@ -234,15 +296,23 @@ async def read_item(file: UploadFile = File(...)):
         )
         result = json.loads(response.choices[0].message.content or "{}")
         return {
-            "score": result['score'],
-            "key_points": result['key_points'],
-            "summary": result['summary'],
-            "type": "url",
-            "short_score": get_short_score(result['score']),
-            "long_score": result['score_summary'],
-            "score_color": get_color(result['score']),
+            "score": result["score"],
+
+            "key_points": result["key_points"],
+            "summary": result["summary"],
+
+            "risk_flags": result["risk_flags"],
+            "recommendations": result["recommendations"],
+            "quick_facts": result["quick_facts"],
+            "confidence": result["confidence"],
+
+            "type": "document",
+            "short_score": get_short_score(result["score"]),
+            "long_score": result["score_summary"],
+            "score_color": get_color(result["score"]),
             "success": True
         }
+        
     except groq.APIStatusError as e:
         return {
             "error_message": f"Failed to query AI (status code: {e.status_code})<br>{e.response}",

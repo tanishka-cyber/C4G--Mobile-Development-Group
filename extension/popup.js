@@ -53,6 +53,7 @@ class HomeScreen extends Screen {
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 			if (tab?.url) {
 				currentAnalysis = await analyzeURL(tab.url);
+				console.log("BACKEND RESPONSE:", currentAnalysis);
 				chrome.storage.session.set({ currentAnalysis: currentAnalysis });
 				tabs[1].show();
 			} else {
@@ -159,7 +160,7 @@ class AnalysisScreen extends Screen {
 		title.className = "page-title";
 		title.textContent = "Analysis";
 		contentElement.appendChild(title);
-		if (!currentAnalysis.success) {
+		if (!currentAnalysis || !currentAnalysis.success) {
 			let error = document.createElement("div");
 			error.className = "error";
 			error.textContent = currentAnalysis?.error_message || "No Current Analysis Found";
@@ -246,8 +247,48 @@ class AnalysisScreen extends Screen {
 		contentElement.appendChild(scoreBox);
 		contentElement.appendChild(scoreSummary);
 		contentElement.appendChild(keyPoints);
+		let riskBox = document.createElement("div");
+		riskBox.className = "key-points";
+
+		let riskTitle = document.createElement("div");
+		riskTitle.className = "key-points-title";
+		riskTitle.textContent = " Risk Flags";
+
+		let riskList = document.createElement("ul");
+		riskList.className = "key-points-list";
+
+		for (let risk of (currentAnalysis.risk_flags || [])) {
+			let li = document.createElement("li");
+			li.textContent = risk;
+			riskList.appendChild(li);
+		}
+
+		riskBox.appendChild(riskTitle);
+		riskBox.appendChild(riskList);
+
+		contentElement.appendChild(riskBox);
+		let recommendationBox = document.createElement("div");
+		recommendationBox.className = "key-points";
+
+		let recommendationTitle = document.createElement("div");
+		recommendationTitle.className = "key-points-title";
+		recommendationTitle.textContent = "Recommendations";
+
+		let recommendationList = document.createElement("ul");
+		recommendationList.className = "key-points-list";
+
+		for (let recommendation of (currentAnalysis.recommendations || [])) {
+			let li = document.createElement("li");
+			li.textContent = recommendation;
+			recommendationList.appendChild(li);
+		}
+
+		recommendationBox.appendChild(recommendationTitle);
+		recommendationBox.appendChild(recommendationList);
+
+		contentElement.appendChild(recommendationBox);
 		contentElement.appendChild(summaryElement);
-		
+
 		return contentElement;
 	}
 }
