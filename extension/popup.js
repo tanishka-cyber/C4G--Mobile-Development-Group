@@ -55,6 +55,9 @@ class HomeScreen extends Screen {
 				currentAnalysis = await analyzeURL(tab.url);
 				console.log("BACKEND RESPONSE:", currentAnalysis);
 				chrome.storage.session.set({ currentAnalysis: currentAnalysis });
+
+				addAnalysisTabs();
+
 				tabs[1].show();
 			} else {
 				tabs[0].show();
@@ -100,6 +103,9 @@ class UploadDocumentScreen extends Screen {
 			loadingScreen.show();
 			currentAnalysis = await analyzeFile(file);
 			chrome.storage.session.set({ currentAnalysis: currentAnalysis });
+
+			addAnalysisTabs();
+
 			tabs[1].show();
 		}
 		contentElement.appendChild(title);
@@ -128,6 +134,9 @@ class EnterURLScreen extends Screen {
 			loadingScreen.show();
 			currentAnalysis = await analyzeURL(urlInput.value);
 			chrome.storage.session.set({ currentAnalysis: currentAnalysis });
+
+			addAnalysisTabs();
+
 			tabs[1].show();
 		}
 		contentElement.appendChild(title);
@@ -293,6 +302,86 @@ class AnalysisScreen extends Screen {
 	}
 }
 
+class RisksScreen extends Screen {
+	calculateContent() {
+		let contentElement = document.createElement("div");
+		contentElement.className = "page";
+
+		let title = document.createElement("div");
+		title.className = "page-title";
+		title.textContent = "Risk Flags 🚩";
+
+		contentElement.appendChild(title);
+
+		let list = document.createElement("ul");
+		list.className = "key-points-list";
+
+		for (let risk of currentAnalysis.risk_flags || []) {
+			let item = document.createElement("li");
+			item.textContent = risk;
+			list.appendChild(item);
+		}
+
+		contentElement.appendChild(list);
+
+		return contentElement;
+	}
+}
+
+
+class RecommendationsScreen extends Screen {
+	calculateContent() {
+		let contentElement = document.createElement("div");
+		contentElement.className = "page";
+
+		let title = document.createElement("div");
+		title.className = "page-title";
+		title.textContent = "Recommendations 💡";
+
+		contentElement.appendChild(title);
+
+		let list = document.createElement("ul");
+		list.className = "key-points-list";
+
+		for (let recommendation of currentAnalysis.recommendations || []) {
+			let item = document.createElement("li");
+			item.textContent = recommendation;
+			list.appendChild(item);
+		}
+
+		contentElement.appendChild(list);
+
+		return contentElement;
+	}
+}
+
+
+class QuickFactsScreen extends Screen {
+	calculateContent() {
+		let contentElement = document.createElement("div");
+		contentElement.className = "page";
+
+		let title = document.createElement("div");
+		title.className = "page-title";
+		title.textContent = "Quick Facts 📋";
+
+		contentElement.appendChild(title);
+
+		let list = document.createElement("ul");
+		list.className = "key-points-list";
+
+		for (let fact of currentAnalysis.quick_facts || []) {
+			let item = document.createElement("li");
+			item.textContent = fact;
+			list.appendChild(item);
+		}
+
+		contentElement.appendChild(list);
+
+		return contentElement;
+	}
+}
+
 class QuestionsScreen extends Screen {
 	calculateContent() {
 		return document.createElement("div");
@@ -306,9 +395,13 @@ class Tab {
 		this.icon = icon;
 	}
 
-	makeButton() {
-		let button = document.createElement("button");
-		button.className = "tab";
+makeButton() {
+	let button = document.createElement("button");
+	button.className = "tab";
+
+	if (this.dynamic) {
+		button.classList.add("dynamic-tab");
+	}
 		this.button = button;
 		let icon = document.createElement("i");
 		icon.className = `tab-icon fa-solid ${this.icon}`;
@@ -338,10 +431,17 @@ let uploadDocumentScreen = new UploadDocumentScreen();
 let enterURLScreen = new EnterURLScreen();
 let loadingScreen = new LoadingScreen();
 
+let risksScreen = new RisksScreen();
+let recommendationsScreen = new RecommendationsScreen();
+let quickFactsScreen = new QuickFactsScreen();
+
 let tabs = [];
-tabs.push(new Tab("Home", new HomeScreen(), "fa-house"));
-tabs.push(new Tab("Analysis", new AnalysisScreen(), "fa-magnifying-glass-chart"));
-// tabs.push(new Tab("Questions", new QuestionsScreen(), "fa-comments"));
+
+let homeTab = new Tab("Home", new HomeScreen(), "fa-house");
+let analysisTab = new Tab("Analysis", new AnalysisScreen(), "fa-magnifying-glass-chart");
+
+tabs.push(homeTab);
+tabs.push(analysisTab);
 
 let tabsElement = document.getElementById("tabs");
 
@@ -350,6 +450,51 @@ tabs.forEach(e => {
 });
 
 tabs[0].show();
+
+
+function addAnalysisTabs() {
+
+	// prevent duplicates
+	if (document.querySelector(".dynamic-tab")) {
+		return;
+	}
+
+	let riskTab = new Tab(
+		"Risks",
+		new RisksScreen(),
+		"fa-triangle-exclamation"
+	);
+	riskTab.dynamic = true;
+
+	let recommendationTab = new Tab(
+		"Advice",
+		new RecommendationsScreen(),
+		"fa-lightbulb"
+	);
+	recommendationTab.dynamic = true;
+
+	let factsTab = new Tab(
+		"Facts",
+		new QuickFactsScreen(),
+		"fa-list"
+	);
+	factsTab.dynamic = true;
+
+
+	tabs.push(riskTab);
+	tabs.push(recommendationTab);
+	tabs.push(factsTab);
+
+
+	riskTab.button = riskTab.makeButton();
+	recommendationTab.button = recommendationTab.makeButton();
+	factsTab.button = factsTab.makeButton();
+
+
+	tabsElement.appendChild(riskTab.button);
+	tabsElement.appendChild(recommendationTab.button);
+	tabsElement.appendChild(factsTab.button);
+}
 
 async function analyzeURL(url) {
 	try {
