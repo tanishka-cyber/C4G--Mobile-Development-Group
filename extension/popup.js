@@ -125,15 +125,7 @@ class EnterURLScreen extends Screen {
 		let title = document.createElement("div");
 		title.className = "page-title";
 		title.textContent = "Enter URL";
-		let urlInput = document.createElement("input");
-		urlInput.placeholder = "https://example.com/...";
-		urlInput.className = "url-enter";
-		urlInput.id = "url";
-		urlInput.name = "url";
-		let analyzeButton = document.createElement("button");
-		analyzeButton.textContent = "Analyze";
-		analyzeButton.className = "analyze-button";
-		analyzeButton.onclick = async () => {
+		let analyze = async () => {
 			removeAnalysisTabs();
 			loadingScreen.show();
 			currentAnalysis = await analyzeURL(urlInput.value);
@@ -143,6 +135,20 @@ class EnterURLScreen extends Screen {
 
 			tabs[1].show();
 		}
+		let urlInput = document.createElement("input");
+		urlInput.placeholder = "https://example.com/...";
+		urlInput.className = "url-enter";
+		urlInput.id = "url";
+		urlInput.name = "url";
+		urlInput.onkeydown = (e) => {
+			if (e.key == "Enter") {
+				analyze();
+			}
+		}
+		let analyzeButton = document.createElement("button");
+		analyzeButton.textContent = "Analyze";
+		analyzeButton.className = "analyze-button";
+		analyzeButton.onclick = analyze;
 		contentElement.appendChild(title);
 		contentElement.appendChild(urlInput);
 		contentElement.appendChild(analyzeButton);
@@ -353,7 +359,7 @@ class AnalysisScreen extends Screen {
 
 		forgetButton.onclick = () => {
 			chrome.storage.session.remove("currentAnalysis");
-			
+
 			removeAnalysisTabs();
 
 			currentAnalysis = {};
