@@ -298,9 +298,95 @@ class AnalysisScreen extends Screen {
 		contentElement.appendChild(recommendationBox);
 		contentElement.appendChild(summaryElement);
 
-		return contentElement;
+		let downloadButton = document.createElement("button");
+		downloadButton.textContent = "Export PDF Report 📄";
+		downloadButton.className = "analyze-button";
+
+	downloadButton.onclick = () => {
+
+	let reportWindow = window.open("", "_blank");
+
+	reportWindow.document.write(`
+		<html>
+		<head>
+			<title>SimpleLens Privacy Report</title>
+			<style>
+				body {
+					font-family: Arial;
+					padding: 40px;
+				}
+
+				h1 {
+					color: #333;
+				}
+
+				.section {
+					margin-bottom: 20px;
+				}
+			</style>
+		</head>
+
+		<body>
+
+		<h1>SimpleLens Privacy Report</h1>
+
+		<div class="section">
+			<h2>Website</h2>
+			<p>${currentAnalysis.title || "Unknown"}</p>
+		</div>
+
+		<div class="section">
+			<h2>Company</h2>
+			<p>${currentAnalysis.company || "Unknown"}</p>
+		</div>
+
+		<div class="section">
+			<h2>Privacy Score</h2>
+			<p>${currentAnalysis.score}/100 (${currentAnalysis.short_score})</p>
+		</div>
+
+		<div class="section">
+			<h2>Summary</h2>
+			<p>${currentAnalysis.long_score}</p>
+		</div>
+
+		<div class="section">
+			<h2>Key Points</h2>
+			<ul>
+				${currentAnalysis.key_points.map(x => `<li>${x}</li>`).join("")}
+			</ul>
+		</div>
+
+		<div class="section">
+			<h2>Risk Flags</h2>
+			<ul>
+				${currentAnalysis.risk_flags.map(x => `<li>${x}</li>`).join("")}
+			</ul>
+		</div>
+
+		<div class="section">
+			<h2>Recommendations</h2>
+			<ul>
+				${currentAnalysis.recommendations.map(x => `<li>${x}</li>`).join("")}
+			</ul>
+		</div>
+
+		</body>
+		</html>
+	`);
+
+	reportWindow.document.close();
+
+	reportWindow.print();
+
+};
+
+contentElement.appendChild(downloadButton);
+
+return contentElement;
 	}
 }
+
 
 class RisksScreen extends Screen {
 	calculateContent() {
@@ -382,6 +468,42 @@ class QuickFactsScreen extends Screen {
 	}
 }
 
+class BreakdownScreen extends Screen {
+	calculateContent() {
+		let contentElement = document.createElement("div");
+		contentElement.className = "page";
+
+		let title = document.createElement("div");
+		title.className = "page-title";
+		title.textContent = "Privacy Breakdown 📊";
+
+		contentElement.appendChild(title);
+
+		let breakdown = currentAnalysis.privacy_breakdown || {};
+
+		for (let category in breakdown) {
+			let item = document.createElement("div");
+			item.className = "key-points";
+
+			let categoryName = document.createElement("div");
+			categoryName.className = "key-points-title";
+			categoryName.textContent = category;
+
+			let score = document.createElement("div");
+			score.className = "breakdown-score";
+			score.textContent = breakdown[category] + "/100";
+
+			item.appendChild(categoryName);
+			item.appendChild(score);
+
+			contentElement.appendChild(item);
+		}
+
+		return contentElement;
+	}
+}
+
+
 class QuestionsScreen extends Screen {
 	calculateContent() {
 		return document.createElement("div");
@@ -434,6 +556,7 @@ let loadingScreen = new LoadingScreen();
 let risksScreen = new RisksScreen();
 let recommendationsScreen = new RecommendationsScreen();
 let quickFactsScreen = new QuickFactsScreen();
+let breakdownScreen = new BreakdownScreen();
 
 let tabs = [];
 
@@ -480,20 +603,31 @@ function addAnalysisTabs() {
 	);
 	factsTab.dynamic = true;
 
+	let breakdownTab = new Tab(
+	"Breakdown",
+	breakdownScreen,
+	"fa-chart-simple"
+);
+
+breakdownTab.dynamic = true;
+
 
 	tabs.push(riskTab);
 	tabs.push(recommendationTab);
 	tabs.push(factsTab);
+	tabs.push(breakdownTab);
 
 
 	riskTab.button = riskTab.makeButton();
 	recommendationTab.button = recommendationTab.makeButton();
 	factsTab.button = factsTab.makeButton();
+	breakdownTab.button = breakdownTab.makeButton();
 
 
 	tabsElement.appendChild(riskTab.button);
 	tabsElement.appendChild(recommendationTab.button);
 	tabsElement.appendChild(factsTab.button);
+	tabsElement.appendChild(breakdownTab.button);
 }
 
 async function analyzeURL(url) {

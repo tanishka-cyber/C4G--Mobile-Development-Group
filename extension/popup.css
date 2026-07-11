@@ -368,3 +368,10 @@ body {
     border-color: #202024;
     padding-bottom: 6px;
 }
+
+.breakdown-score {
+	font-size: 24px;
+	font-weight: bold;
+	color: white;
+	margin-top: 8px;
+}
