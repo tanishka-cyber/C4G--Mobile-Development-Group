@@ -42,18 +42,20 @@ body {
 #tabs {
     background-color: #202024;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 6px;
 }
 
 .tab {
     display: flex;
     flex-direction: column;
-    gap: 6px;
     align-items: center;
+    justify-content: center;
+    gap: 4px;
     color: white;
-    flex-grow: 1;
-    padding-block: 6px;
+    padding: 8px 4px;
     transition: .25s background-color;
+    width: 100%;
 }
 
 .tab:hover {

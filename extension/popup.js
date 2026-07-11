@@ -256,46 +256,6 @@ class AnalysisScreen extends Screen {
 		contentElement.appendChild(scoreBox);
 		contentElement.appendChild(scoreSummary);
 		contentElement.appendChild(keyPoints);
-		let riskBox = document.createElement("div");
-		riskBox.className = "key-points";
-
-		let riskTitle = document.createElement("div");
-		riskTitle.className = "key-points-title";
-		riskTitle.textContent = " Risk Flags";
-
-		let riskList = document.createElement("ul");
-		riskList.className = "key-points-list";
-
-		for (let risk of (currentAnalysis.risk_flags || [])) {
-			let li = document.createElement("li");
-			li.textContent = risk;
-			riskList.appendChild(li);
-		}
-
-		riskBox.appendChild(riskTitle);
-		riskBox.appendChild(riskList);
-
-		contentElement.appendChild(riskBox);
-		let recommendationBox = document.createElement("div");
-		recommendationBox.className = "key-points";
-
-		let recommendationTitle = document.createElement("div");
-		recommendationTitle.className = "key-points-title";
-		recommendationTitle.textContent = "Recommendations";
-
-		let recommendationList = document.createElement("ul");
-		recommendationList.className = "key-points-list";
-
-		for (let recommendation of (currentAnalysis.recommendations || [])) {
-			let li = document.createElement("li");
-			li.textContent = recommendation;
-			recommendationList.appendChild(li);
-		}
-
-		recommendationBox.appendChild(recommendationTitle);
-		recommendationBox.appendChild(recommendationList);
-
-		contentElement.appendChild(recommendationBox);
 		contentElement.appendChild(summaryElement);
 
 		let downloadButton = document.createElement("button");
