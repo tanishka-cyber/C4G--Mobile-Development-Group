@@ -482,7 +482,66 @@ class BreakdownScreen extends Screen {
 
 class QuestionsScreen extends Screen {
 	calculateContent() {
-		return document.createElement("div");
+		let contentElement = document.createElement("div");
+		contentElement.className = "page";
+
+		let title = document.createElement("div");
+		title.className = "page-title";
+		title.textContent = "Ask SimpleLens 🤖";
+
+		let description = document.createElement("div");
+		description.className = "summary";
+		description.textContent =
+			"Ask questions about the privacy policy you just analyzed.";
+
+		let chatBox = document.createElement("div");
+		chatBox.className = "chat-box";
+
+		let messages = document.createElement("div");
+		messages.className = "chat-messages";
+
+		let input = document.createElement("textarea");
+
+		input.className = "chat-input";
+		input.placeholder = "Example: Can they sell my data?";
+
+		let sendButton = document.createElement("button");
+		sendButton.className = "analyze-button";
+		sendButton.textContent = "Send";
+		
+	sendButton.onclick = async () => {
+		if (!input.value.trim()) return;
+
+		let question = input.value;
+
+		let userMessage = document.createElement("div");
+		userMessage.className = "chat-user-message";
+		userMessage.textContent = question;
+
+		messages.appendChild(userMessage);
+
+		input.value = "";
+
+		let response = await askChatbot(question);
+
+		let aiMessage = document.createElement("div");
+		aiMessage.className = "chat-ai-message";
+		aiMessage.textContent = response.answer || "No response received.";
+
+		messages.appendChild(aiMessage);
+
+		messages.scrollTop = messages.scrollHeight;
+	};
+
+		chatBox.appendChild(messages);
+		chatBox.appendChild(input);
+		chatBox.appendChild(sendButton);
+
+		contentElement.appendChild(title);
+		contentElement.appendChild(description);
+		contentElement.appendChild(chatBox);
+
+		return contentElement;
 	}
 }
 
@@ -587,23 +646,33 @@ function addAnalysisTabs() {
 
 breakdownTab.dynamic = true;
 
+	let chatTab = new Tab(
+	"Ask AI",
+	new QuestionsScreen(),
+	"fa-comments"
+);
+
+chatTab.dynamic = true;
 
 	tabs.push(riskTab);
 	tabs.push(recommendationTab);
 	tabs.push(factsTab);
 	tabs.push(breakdownTab);
+	tabs.push(chatTab);
 
 
 	riskTab.button = riskTab.makeButton();
 	recommendationTab.button = recommendationTab.makeButton();
 	factsTab.button = factsTab.makeButton();
 	breakdownTab.button = breakdownTab.makeButton();
+	chatTab.button = chatTab.makeButton();
 
 
 	tabsElement.appendChild(riskTab.button);
 	tabsElement.appendChild(recommendationTab.button);
 	tabsElement.appendChild(factsTab.button);
 	tabsElement.appendChild(breakdownTab.button);
+	tabsElement.appendChild(chatTab.button);
 }
 
 async function analyzeURL(url) {
@@ -636,6 +705,31 @@ async function analyzeFile(file) {
 		return await res.json();
 	} catch (e) {
 		return { success: false, error_message: "Failed to fetch analysis" };
+	}
+}
+
+async function askChatbot(question) {
+	try {
+		let api = apiURL + "/chat/";
+
+		let res = await fetch(api, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+				question: question,
+				analysis: currentAnalysis
+			})
+		});
+
+		return await res.json();
+
+	} catch (e) {
+		return {
+			success: false,
+			answer: "Failed to connect to chatbot."
+		};
 	}
 }
 

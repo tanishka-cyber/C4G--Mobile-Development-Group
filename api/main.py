@@ -17,6 +17,10 @@ load_dotenv()
 class URLRequest(BaseModel):
     url: str
 
+class ChatRequest(BaseModel):
+    question: str
+    analysis: dict
+
 app = FastAPI()
 
 client = Groq(
@@ -361,5 +365,52 @@ async def read_item(file: UploadFile = File(...)):
         }
 
 @app.post("/chat/")
-def read_item(document: str):
-    return {}
+def chat(request: ChatRequest):
+    try:
+        prompt = f"""
+You are SimpleLens AI, a privacy assistant.
+
+Answer the user's question using ONLY the provided privacy analysis.
+
+Keep your answer:
+- simple
+- clear
+- helpful
+- easy for non-technical users to understand
+
+Do not make assumptions beyond the analysis.
+
+Do not use markdown formatting. 
+Do not use **, bullet points, or special formatting.
+Write plain text only.
+
+Privacy Analysis:
+{request.analysis}
+
+User Question:
+{request.question}
+"""
+
+        response = client.chat.completions.create(
+            model=data["model"],
+            temperature=0,
+            messages=[
+                {
+                    "role": "system",
+                    "content": prompt
+                }
+            ]
+        )
+
+        answer = response.choices[0].message.content
+
+        return {
+            "success": True,
+            "answer": answer
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "answer": f"Chatbot error: {e}"
+        }

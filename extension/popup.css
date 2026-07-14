@@ -377,3 +377,58 @@ body {
 	color: white;
 	margin-top: 8px;
 }
+
+.chat-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.chat-messages {
+    height: 220px;
+    overflow-y: auto;
+    border: 2px solid #202024;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: #18181b;
+}
+
+.chat-user-message {
+    align-self: flex-end;
+    background-color: #1a53ac;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.chat-ai-message {
+    align-self: flex-start;
+    background-color: #202024;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.chat-input {
+    width: 100%;
+    min-height: 60px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #202024;
+    background: transparent;
+    color: white;
+    resize: none;
+    font-size: 1rem;
+}
+
+.chat-input::placeholder {
+    color: #aaaaaa;
+}
