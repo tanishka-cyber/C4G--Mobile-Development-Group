@@ -29,9 +29,7 @@ client = Groq(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "chrome-extension://inakldcfkbaplcghkchcpahiofnambdc",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -94,7 +92,7 @@ If something is missing from the policy, mention that it is missing rather than 
                         "type": "string"
                     },
                     "key_points": {
-                        "description": "3-5 key things the user needs to know about the document",
+                        "description": "3-5 key things the user needs to know about the document. Keep these key points short, you don't want the user to get confused by reading long key points. Ideally under 10 words.",
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -119,7 +117,7 @@ If something is missing from the policy, mention that it is missing rather than 
                         }
                     },
                     "quick_facts": {
-                        "description": "Short yes/no privacy facts",
+                        "description": "Short yes/no privacy facts. Do not just say yes or no, provide a short string (6-8 words) describing what is yes or no.",
                         "type": "array",
                         "items": {
                             "type": "string"

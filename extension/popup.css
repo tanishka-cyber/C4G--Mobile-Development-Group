@@ -45,6 +45,10 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 6px;
 }
+
+#tabs:not(.show-dynamic) .dynamic-tab {
+    display: none;
+}
 .tab {
     display: flex;
     flex-direction: column;
@@ -230,6 +234,10 @@ body {
 
 .analyze-button:active {
     scale: .95;
+}
+
+.analyze-button.wide {
+    width: 80%;
 }
 
 .score-box {
@@ -430,4 +438,5 @@ body {
 
 .chat-input::placeholder {
     color: #aaaaaa;
+    padding: 8px;
 }

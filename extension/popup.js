@@ -1,8 +1,9 @@
 let currentAnalysis = {};
 
 chrome.storage.session.get(["currentAnalysis"]).then((result) => {
-  	if (result?.currentAnalysis) {
+	if (result?.currentAnalysis) {
 		currentAnalysis = result.currentAnalysis;
+		addAnalysisTabs();
 	}
 });
 
@@ -49,6 +50,7 @@ class HomeScreen extends Screen {
 		let currentPageButton = document.createElement("button");
 		currentPageButton.className = "home-button";
 		currentPageButton.onclick = async () => {
+			removeAnalysisTabs();
 			loadingScreen.show();
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 			if (tab?.url) {
@@ -56,7 +58,7 @@ class HomeScreen extends Screen {
 				console.log("BACKEND RESPONSE:", currentAnalysis);
 				chrome.storage.session.set({ currentAnalysis: currentAnalysis });
 
-				addAnalysisTabs();
+				if (currentAnalysis.success) addAnalysisTabs();
 
 				tabs[1].show();
 			} else {
@@ -98,13 +100,14 @@ class UploadDocumentScreen extends Screen {
 		analyzeButton.textContent = "Analyze";
 		analyzeButton.className = "analyze-button";
 		analyzeButton.onclick = async () => {
+			removeAnalysisTabs();
 			let file = hiddenFileInput.files[0];
 			if (!file) return;
 			loadingScreen.show();
 			currentAnalysis = await analyzeFile(file);
 			chrome.storage.session.set({ currentAnalysis: currentAnalysis });
 
-			addAnalysisTabs();
+			if (currentAnalysis.success) addAnalysisTabs();
 
 			tabs[1].show();
 		}
@@ -122,23 +125,30 @@ class EnterURLScreen extends Screen {
 		let title = document.createElement("div");
 		title.className = "page-title";
 		title.textContent = "Enter URL";
+		let analyze = async () => {
+			removeAnalysisTabs();
+			loadingScreen.show();
+			currentAnalysis = await analyzeURL(urlInput.value);
+			chrome.storage.session.set({ currentAnalysis: currentAnalysis });
+
+			if (currentAnalysis.success) addAnalysisTabs();
+
+			tabs[1].show();
+		}
 		let urlInput = document.createElement("input");
 		urlInput.placeholder = "https://example.com/...";
 		urlInput.className = "url-enter";
 		urlInput.id = "url";
 		urlInput.name = "url";
+		urlInput.onkeydown = (e) => {
+			if (e.key == "Enter") {
+				analyze();
+			}
+		}
 		let analyzeButton = document.createElement("button");
 		analyzeButton.textContent = "Analyze";
 		analyzeButton.className = "analyze-button";
-		analyzeButton.onclick = async () => {
-			loadingScreen.show();
-			currentAnalysis = await analyzeURL(urlInput.value);
-			chrome.storage.session.set({ currentAnalysis: currentAnalysis });
-
-			addAnalysisTabs();
-
-			tabs[1].show();
-		}
+		analyzeButton.onclick = analyze;
 		contentElement.appendChild(title);
 		contentElement.appendChild(urlInput);
 		contentElement.appendChild(analyzeButton);
@@ -226,7 +236,7 @@ class AnalysisScreen extends Screen {
 		summaryElement.className = "summary";
 		summaryElement.textContent = currentAnalysis.summary;
 
-				// Website metadata section (URL analysis)
+		// Website metadata section (URL analysis)
 		let metadata = document.createElement("div");
 		metadata.className = "metadata";
 
@@ -260,13 +270,13 @@ class AnalysisScreen extends Screen {
 
 		let downloadButton = document.createElement("button");
 		downloadButton.textContent = "Export PDF Report 📄";
-		downloadButton.className = "analyze-button";
+		downloadButton.className = "analyze-button wide";
 
-	downloadButton.onclick = () => {
+		downloadButton.onclick = () => {
 
-	let reportWindow = window.open("", "_blank");
+			let reportWindow = window.open("", "_blank");
 
-	reportWindow.document.write(`
+			reportWindow.document.write(`
 		<html>
 		<head>
 			<title>SimpleLens Privacy Report</title>
@@ -335,31 +345,33 @@ class AnalysisScreen extends Screen {
 		</html>
 	`);
 
-	reportWindow.document.close();
+			reportWindow.document.close();
 
-	reportWindow.print();
+			reportWindow.print();
 
-};
+		};
 
-contentElement.appendChild(downloadButton);
+		contentElement.appendChild(downloadButton);
 
-let forgetButton = document.createElement("button");
-forgetButton.textContent = "Forget My Data 🗑️";
-forgetButton.className = "analyze-button";
+		let forgetButton = document.createElement("button");
+		forgetButton.innerHTML = "Forget My Data 🗑️";
+		forgetButton.className = "analyze-button wide";
 
-forgetButton.onclick = () => {
-	chrome.storage.session.remove("currentAnalysis");
+		forgetButton.onclick = () => {
+			chrome.storage.session.remove("currentAnalysis");
 
-	currentAnalysis = {};
+			removeAnalysisTabs();
 
-	alert("Your analysis data has been deleted.");
+			currentAnalysis = {};
 
-	tabs[0].show();
-};
+			alert("Your analysis data has been deleted.");
 
-contentElement.appendChild(forgetButton);
+			tabs[0].show();
+		};
 
-return contentElement;
+		contentElement.appendChild(forgetButton);
+
+		return contentElement;
 	}
 }
 
@@ -552,13 +564,13 @@ class Tab {
 		this.icon = icon;
 	}
 
-makeButton() {
-	let button = document.createElement("button");
-	button.className = "tab";
+	makeButton() {
+		let button = document.createElement("button");
+		button.className = "tab";
 
-	if (this.dynamic) {
-		button.classList.add("dynamic-tab");
-	}
+		if (this.dynamic) {
+			button.classList.add("dynamic-tab");
+		}
 		this.button = button;
 		let icon = document.createElement("i");
 		icon.className = `tab-icon fa-solid ${this.icon}`;
@@ -601,6 +613,48 @@ let analysisTab = new Tab("Analysis", new AnalysisScreen(), "fa-magnifying-glass
 tabs.push(homeTab);
 tabs.push(analysisTab);
 
+let riskTab = new Tab(
+	"Risks",
+	new RisksScreen(),
+	"fa-triangle-exclamation"
+);
+riskTab.dynamic = true;
+
+let recommendationTab = new Tab(
+	"Advice",
+	new RecommendationsScreen(),
+	"fa-lightbulb"
+);
+recommendationTab.dynamic = true;
+
+let factsTab = new Tab(
+	"Facts",
+	new QuickFactsScreen(),
+	"fa-list"
+);
+factsTab.dynamic = true;
+
+let breakdownTab = new Tab(
+	"Breakdown",
+	breakdownScreen,
+	"fa-chart-simple"
+);
+breakdownTab.dynamic = true;
+
+tabs.push(riskTab);
+tabs.push(recommendationTab);
+tabs.push(factsTab);
+tabs.push(breakdownTab);
+
+let chatTab = new Tab(
+	"Ask AI",
+	new QuestionsScreen(),
+	"fa-comments"
+);
+chatTab.dynamic = true;
+
+tabs.push(chatTab);
+
 let tabsElement = document.getElementById("tabs");
 
 tabs.forEach(e => {
@@ -609,71 +663,15 @@ tabs.forEach(e => {
 
 tabs[0].show();
 
-
 function addAnalysisTabs() {
-
-	// prevent duplicates
-	if (document.querySelector(".dynamic-tab")) {
-		return;
-	}
-
-	let riskTab = new Tab(
-		"Risks",
-		new RisksScreen(),
-		"fa-triangle-exclamation"
-	);
-	riskTab.dynamic = true;
-
-	let recommendationTab = new Tab(
-		"Advice",
-		new RecommendationsScreen(),
-		"fa-lightbulb"
-	);
-	recommendationTab.dynamic = true;
-
-	let factsTab = new Tab(
-		"Facts",
-		new QuickFactsScreen(),
-		"fa-list"
-	);
-	factsTab.dynamic = true;
-
-	let breakdownTab = new Tab(
-	"Breakdown",
-	breakdownScreen,
-	"fa-chart-simple"
-);
-
-breakdownTab.dynamic = true;
-
-	let chatTab = new Tab(
-	"Ask AI",
-	new QuestionsScreen(),
-	"fa-comments"
-);
-
-chatTab.dynamic = true;
-
-	tabs.push(riskTab);
-	tabs.push(recommendationTab);
-	tabs.push(factsTab);
-	tabs.push(breakdownTab);
-	tabs.push(chatTab);
-
-
-	riskTab.button = riskTab.makeButton();
-	recommendationTab.button = recommendationTab.makeButton();
-	factsTab.button = factsTab.makeButton();
-	breakdownTab.button = breakdownTab.makeButton();
-	chatTab.button = chatTab.makeButton();
-
-
-	tabsElement.appendChild(riskTab.button);
-	tabsElement.appendChild(recommendationTab.button);
-	tabsElement.appendChild(factsTab.button);
-	tabsElement.appendChild(breakdownTab.button);
-	tabsElement.appendChild(chatTab.button);
+	tabsElement.classList.add("show-dynamic");
 }
+
+
+function removeAnalysisTabs() {
+    tabsElement.classList.remove("show-dynamic");
+}
+
 
 async function analyzeURL(url) {
 	try {
@@ -697,7 +695,7 @@ async function analyzeFile(file) {
 	try {
 		let api = apiURL + "/document/";
 		const formData = new FormData();
-    	formData.append("file", file);
+		formData.append("file", file);
 		let res = await fetch(api, {
 			method: "POST",
 			body: formData
