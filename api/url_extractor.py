@@ -5,6 +5,10 @@ from urllib.parse import urlparse
 
 def extract_text_from_url(url: str):
     try:
+        # allow the user to enter urls without http
+        if not url.startswith(("http://", "https://")):
+            url = "https://" + url
+
         response = requests.get(
             url,
             timeout=10,
