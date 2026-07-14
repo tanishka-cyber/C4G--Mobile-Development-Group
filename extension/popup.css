@@ -42,10 +42,9 @@ body {
 #tabs {
     background-color: #202024;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 6px;
 }
-
 .tab {
     display: flex;
     flex-direction: column;
@@ -71,7 +70,7 @@ body {
 }
 
 .tab-icon {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
 }
 
 .tab-name {
