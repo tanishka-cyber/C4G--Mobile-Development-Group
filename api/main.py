@@ -378,9 +378,14 @@ Keep your answer:
 
 Do not make assumptions beyond the analysis.
 
-Do not use markdown formatting. 
-Do not use **, bullet points, or special formatting.
-Write plain text only.
+Formatting rules:
+- Write in short paragraphs.
+- Put a blank line between different ideas.
+- Do not use markdown.
+- Do not use bullet points.
+- Do not use headings.
+- Do not use bold text.
+- Do not write one large block of text.
 
 Privacy Analysis:
 {request.analysis}

@@ -574,7 +574,7 @@ class QuestionsScreen extends Screen {
 
 		let aiMessage = document.createElement("div");
 		aiMessage.className = "chat-ai-message";
-		aiMessage.textContent = response.answer || "No response received.";
+		aiMessage.innerText = response.answer || "No response received.";
 
 		messages.appendChild(aiMessage);
 

@@ -422,6 +422,7 @@ body {
     border-radius: 12px;
     max-width: 80%;
     word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .chat-input {
