@@ -518,27 +518,24 @@ class QuestionsScreen extends Screen {
 		input.placeholder = "Example: Can they sell my data?";
 
 		let suggestions = [
-			"Can they sell my data?",
-			"What information do they collect?",
-			"Can I delete my account?",
-			"Is my data shared with advertisers?"
+			{ text: "Sell my data?", icon: "💰" },
+			{ text: "What data is collected?", icon: "📋" },
+			{ text: "Delete my account?", icon: "🗑️" },
+			{ text: "Shared with advertisers?", icon: "📢" }
 		];
 
 		let suggestionBox = document.createElement("div");
-		suggestionBox.className = "suggestion-box";
-
-		suggestions.forEach((question) => {
+		suggestions.forEach((suggestion) => {
 			let button = document.createElement("button");
 			button.className = "suggestion-button";
-			button.textContent = question;
+			button.textContent = `${suggestion.icon} ${suggestion.text}`;
 
 			button.onclick = () => {
-				input.value = question;
+				input.value = suggestion.text;
 			};
 
 			suggestionBox.appendChild(button);
 		});
-
 
 
 		let sendButton = document.createElement("button");
@@ -547,6 +544,8 @@ class QuestionsScreen extends Screen {
 		
 	sendButton.onclick = async () => {
 		if (!input.value.trim()) return;
+
+		suggestionBox.style.display = "none";
 
 		let question = input.value;
 
@@ -558,7 +557,20 @@ class QuestionsScreen extends Screen {
 
 		input.value = "";
 
+		let loadingMessage = document.createElement("div");
+		loadingMessage.className = "typing-indicator";
+
+		loadingMessage.innerHTML = `
+			<span></span>
+			<span></span>
+			<span></span>
+		`;
+
+		messages.appendChild(loadingMessage);
+
 		let response = await askChatbot(question);
+
+		loadingMessage.remove();
 
 		let aiMessage = document.createElement("div");
 		aiMessage.className = "chat-ai-message";
