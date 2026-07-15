@@ -440,3 +440,24 @@ body {
     color: #aaaaaa;
     padding: 8px;
 }
+
+.suggestion-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+.suggestion-button {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: white;
+    cursor: pointer;
+    text-align: left;
+    font-size: 14px;
+}
+
+.suggestion-button:hover {
+    background-color: #f2f2f2;
+}

@@ -517,6 +517,30 @@ class QuestionsScreen extends Screen {
 		input.className = "chat-input";
 		input.placeholder = "Example: Can they sell my data?";
 
+		let suggestions = [
+			"Can they sell my data?",
+			"What information do they collect?",
+			"Can I delete my account?",
+			"Is my data shared with advertisers?"
+		];
+
+		let suggestionBox = document.createElement("div");
+		suggestionBox.className = "suggestion-box";
+
+		suggestions.forEach((question) => {
+			let button = document.createElement("button");
+			button.className = "suggestion-button";
+			button.textContent = question;
+
+			button.onclick = () => {
+				input.value = question;
+			};
+
+			suggestionBox.appendChild(button);
+		});
+
+
+
 		let sendButton = document.createElement("button");
 		sendButton.className = "analyze-button";
 		sendButton.textContent = "Send";
@@ -551,6 +575,7 @@ class QuestionsScreen extends Screen {
 
 		contentElement.appendChild(title);
 		contentElement.appendChild(description);
+		contentElement.appendChild(suggestionBox);
 		contentElement.appendChild(chatBox);
 
 		return contentElement;
