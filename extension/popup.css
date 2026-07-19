@@ -42,8 +42,7 @@ body {
 #tabs {
     background-color: #202024;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
 }
 
 #tabs:not(.show-dynamic) .dynamic-tab {

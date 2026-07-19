@@ -398,32 +398,22 @@ class RisksScreen extends Screen {
 
 		contentElement.appendChild(list);
 
-		return contentElement;
-	}
-}
+		let title2 = document.createElement("div");
+		title2.className = "page-title";
+		title2.textContent = "Recommendations 💡";
 
+		contentElement.appendChild(title2);
 
-class RecommendationsScreen extends Screen {
-	calculateContent() {
-		let contentElement = document.createElement("div");
-		contentElement.className = "page";
-
-		let title = document.createElement("div");
-		title.className = "page-title";
-		title.textContent = "Recommendations 💡";
-
-		contentElement.appendChild(title);
-
-		let list = document.createElement("ul");
-		list.className = "key-points-list";
+		let list2 = document.createElement("ul");
+		list2.className = "key-points-list";
 
 		for (let recommendation of currentAnalysis.recommendations || []) {
 			let item = document.createElement("li");
 			item.textContent = recommendation;
-			list.appendChild(item);
+			list2.appendChild(item);
 		}
 
-		contentElement.appendChild(list);
+		contentElement.appendChild(list2);
 
 		return contentElement;
 	}
@@ -638,31 +628,23 @@ let enterURLScreen = new EnterURLScreen();
 let loadingScreen = new LoadingScreen();
 
 let risksScreen = new RisksScreen();
-let recommendationsScreen = new RecommendationsScreen();
 let quickFactsScreen = new QuickFactsScreen();
 let breakdownScreen = new BreakdownScreen();
 
 let tabs = [];
 
 let homeTab = new Tab("Home", new HomeScreen(), "fa-house");
-let analysisTab = new Tab("Analysis", new AnalysisScreen(), "fa-magnifying-glass-chart");
+let analysisTab = new Tab("Summary", new AnalysisScreen(), "fa-magnifying-glass-chart");
 
 tabs.push(homeTab);
 tabs.push(analysisTab);
 
 let riskTab = new Tab(
-	"Risks",
+	"Risks & Advice",
 	new RisksScreen(),
 	"fa-triangle-exclamation"
 );
 riskTab.dynamic = true;
-
-let recommendationTab = new Tab(
-	"Advice",
-	new RecommendationsScreen(),
-	"fa-lightbulb"
-);
-recommendationTab.dynamic = true;
 
 let factsTab = new Tab(
 	"Facts",
@@ -679,7 +661,6 @@ let breakdownTab = new Tab(
 breakdownTab.dynamic = true;
 
 tabs.push(riskTab);
-tabs.push(recommendationTab);
 tabs.push(factsTab);
 tabs.push(breakdownTab);
 
