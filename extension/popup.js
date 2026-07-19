@@ -177,7 +177,7 @@ class AnalysisScreen extends Screen {
 		contentElement.className = "page";
 		let title = document.createElement("div");
 		title.className = "page-title";
-		title.textContent = "Analysis";
+		title.textContent = "Analysis Summary";
 		contentElement.appendChild(title);
 		if (!currentAnalysis || !currentAnalysis.success) {
 			let error = document.createElement("div");
@@ -400,7 +400,7 @@ class RisksScreen extends Screen {
 
 		let title2 = document.createElement("div");
 		title2.className = "page-title";
-		title2.textContent = "Recommendations 💡";
+		title2.textContent = "Recommendations";
 
 		contentElement.appendChild(title2);
 
@@ -640,7 +640,7 @@ tabs.push(homeTab);
 tabs.push(analysisTab);
 
 let riskTab = new Tab(
-	"Risks & Advice",
+	"Risks/Advice",
 	new RisksScreen(),
 	"fa-triangle-exclamation"
 );
