@@ -381,7 +381,7 @@ body {
 	font-size: 24px;
 	font-weight: bold;
 	color: white;
-	margin-top: 8px;
+	padding: 8px;
 }
 
 .chat-box {
