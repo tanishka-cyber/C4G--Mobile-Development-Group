@@ -1,9 +1,13 @@
 let currentAnalysis = {};
+let chat = [];
 
-chrome.storage.session.get(["currentAnalysis"]).then((result) => {
+chrome.storage.session.get(["currentAnalysis", "chat"]).then((result) => {
 	if (result?.currentAnalysis) {
 		currentAnalysis = result.currentAnalysis;
 		addAnalysisTabs();
+	}
+	if (result?.chat) {
+		chat = result.chat;
 	}
 });
 
@@ -497,6 +501,13 @@ class QuestionsScreen extends Screen {
 		let messages = document.createElement("div");
 		messages.className = "chat-messages";
 
+		for (let message of chat) {
+			let messageElement = document.createElement("div");
+			messageElement.textContent = message.content;
+			messageElement.className = `chat-${message.side}-message`;
+			messages.appendChild(messageElement);
+		}
+
 		let inputWrapper = document.createElement("div");
 		inputWrapper.className = "chat-input-wrapper";
 
@@ -527,6 +538,7 @@ class QuestionsScreen extends Screen {
 			suggestionBox.appendChild(button);
 		});
 
+		if (chat.length > 0) suggestionBox.style.display = "none";
 
 		let sendButton = document.createElement("button");
 		sendButton.className = "send-button";
@@ -558,9 +570,18 @@ class QuestionsScreen extends Screen {
 
 			loadingMessage.remove();
 
+			let answer = response.answer || "No response received.";
+
 			let aiMessage = document.createElement("div");
 			aiMessage.className = "chat-ai-message";
-			aiMessage.innerText = response.answer || "No response received.";
+			aiMessage.innerText = answer;
+
+			chat = chat.concat([
+				{ "side": "user", "content": question },
+				{ "side": "ai", "content": answer }
+			]);
+
+			chrome.storage.session.set({ chat });
 
 			messages.appendChild(aiMessage);
 
@@ -570,7 +591,11 @@ class QuestionsScreen extends Screen {
 		chatBox.appendChild(messages);
 		inputWrapper.appendChild(input);
 		inputWrapper.appendChild(sendButton);
-		
+
+		setTimeout(() => {
+			messages.scrollTop = messages.scrollHeight;
+		}, 0);
+
 		contentElement.appendChild(title);
 		contentElement.appendChild(suggestionBox);
 		contentElement.appendChild(chatBox);
