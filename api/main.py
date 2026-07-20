@@ -1,16 +1,25 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from groq import Groq
-import groq;
+from dotenv import load_dotenv
+import groq
 import os
 from pydantic import BaseModel
 import json
 import copy
 from pypdf import PdfReader
 import io
+from url_extractor import extract_text_from_url
+
+load_dotenv()
+
 
 class URLRequest(BaseModel):
     url: str
+
+class ChatRequest(BaseModel):
+    question: str
+    analysis: dict
 
 app = FastAPI()
 
@@ -20,9 +29,7 @@ client = Groq(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "chrome-extension://pegnhhobmmkkhlndochgnjnbeneoimjk",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,7 +39,37 @@ data = {
     "messages": [
         {
             "role": "system",
-            "content": "You will be given a document to analyize for user privacy, security, best practices, user data collection, selling of user data, tracking, legal compliance, promises, amount of jargon, etc."
+            "content": """
+You are an expert privacy, cybersecurity, and legal policy analyzer.
+
+Analyze the document thoroughly.
+
+Score the document from 0-100 based on:
+- Privacy
+- Security
+- Transparency
+- User Rights
+- Data Collection
+- Data Sharing
+- Data Retention
+- Tracking Technologies
+- Legal Compliance
+- Readability
+
+Provide:
+- an overall score
+- a concise explanation of the score
+- 3-5 key points
+- a summary
+- important privacy risk flags
+- practical recommendations for the user
+- quick privacy facts
+- a confidence score from 0-100 based on how complete the document appears.
+
+Be objective.
+Do not invent information that is not present.
+If something is missing from the policy, mention that it is missing rather than assuming it exists.
+"""
         }
     ],
     "temperature": 0,
@@ -55,7 +92,7 @@ data = {
                         "type": "string"
                     },
                     "key_points": {
-                        "description": "3-5 key things the user needs to know about the document",
+                        "description": "3-5 key things the user needs to know about the document. Keep these key points short, you don't want the user to get confused by reading long key points. Ideally under 10 words.",
                         "type": "array",
                         "items": {
                             "type": "string"
@@ -64,6 +101,55 @@ data = {
                     "summary": {
                         "description": "Summary of the document",
                         "type": "string"
+                    },
+                    "risk_flags": {
+                        "description": "Important privacy risks users should immediately notice",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "recommendations": {
+                        "description": "Specific actions the user should take",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "quick_facts": {
+                        "description": "Short yes/no privacy facts. Do not just say yes or no, provide a short string (6-8 words) describing what is yes or no.",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "confidence": {
+                        "description": "Confidence from 0-100 that the analysis is accurate",
+                        "type": "integer"
+                    },
+                    "privacy_breakdown": {
+                        "description": "Category scores from 0-100 evaluating different privacy areas",
+                        "type": "object",
+                        "properties": {
+                            "Data Collection": {
+                                "type": "integer" 
+                            },
+                            "Transparency": {
+                                "type": "integer"
+                            },
+                            "Tracking": {
+                                "type": "integer"
+                            },
+                            "Security": {
+                                "type": "integer"
+                            },
+                            "User Rights": {
+                                "type": "integer"
+                            },
+                            "Third Parties": {
+                                "type": "integer"
+                            }
+                        }
                     }
                 }
             }
@@ -74,6 +160,9 @@ data = {
 @app.get("/")
 def apiInfo():
     return {"active": True}
+
+
+
 
 def get_color(score: int):
     score = max(0, min(100, score))
@@ -128,10 +217,27 @@ def get_short_score(score: int):
 def read_item(request: URLRequest):
     try:
         messages = copy.deepcopy(data['messages'])
+        website_data = extract_text_from_url(request.url)
+
+        if not website_data:
+            return{
+                "error_message": "Could not read webpage",
+                "success":False
+            }
+
+        website_text = website_data["text"]
+
+        if not website_text:
+            return{
+                "error_message": "Could not read webpage",
+                "success":False
+            }
+
         messages.append({
             "role": "user",
-            "content": "URL: " + request.url
+            "content": "Document contents: " + website_text
         })
+
         response = client.chat.completions.create(
             model=data['model'],
             temperature=data['temperature'],
@@ -140,15 +246,28 @@ def read_item(request: URLRequest):
         )
         result = json.loads(response.choices[0].message.content or "{}")
         return {
-            "score": result['score'],
-            "key_points": result['key_points'],
-            "summary": result['summary'],
+            "score": result["score"],
+            "title": website_data["title"],
+            "company": website_data["company"],
+            "word_count": website_data["word_count"],
+            "reading_time": website_data["reading_time"],
+
+            "key_points": result["key_points"],
+            "summary": result["summary"],
+
+            "risk_flags": result["risk_flags"],
+            "recommendations": result["recommendations"],
+            "quick_facts": result["quick_facts"],
+            "confidence": result["confidence"],
+            "privacy_breakdown": result["privacy_breakdown"],
+
             "type": "url",
-            "short_score": get_short_score(result['score']),
-            "long_score": result['score_summary'],
-            "score_color": get_color(result['score']),
+            "short_score": get_short_score(result["score"]),
+            "long_score": result["score_summary"],
+            "score_color": get_color(result["score"]),
             "success": True
         }
+
     except groq.APIStatusError as e:
         return {
             "error_message": f"Failed to query AI (status code: {e.status_code})<br>{e.response}",
@@ -166,7 +285,7 @@ def read_item(request: URLRequest):
         }
     except Exception as e:
         return {
-            "error_message": f"${e}",
+            "error_message": f"{e}",
             "success": False
         }
 
@@ -204,15 +323,24 @@ async def read_item(file: UploadFile = File(...)):
         )
         result = json.loads(response.choices[0].message.content or "{}")
         return {
-            "score": result['score'],
-            "key_points": result['key_points'],
-            "summary": result['summary'],
-            "type": "url",
-            "short_score": get_short_score(result['score']),
-            "long_score": result['score_summary'],
-            "score_color": get_color(result['score']),
+            "score": result["score"],
+
+            "key_points": result["key_points"],
+            "summary": result["summary"],
+            "privacy_breakdown": result["privacy_breakdown"],
+
+            "risk_flags": result["risk_flags"],
+            "recommendations": result["recommendations"],
+            "quick_facts": result["quick_facts"],
+            "confidence": result["confidence"],
+
+            "type": "document",
+            "short_score": get_short_score(result["score"]),
+            "long_score": result["score_summary"],
+            "score_color": get_color(result["score"]),
             "success": True
         }
+
     except groq.APIStatusError as e:
         return {
             "error_message": f"Failed to query AI (status code: {e.status_code})<br>{e.response}",
@@ -235,5 +363,57 @@ async def read_item(file: UploadFile = File(...)):
         }
 
 @app.post("/chat/")
-def read_item(document: str):
-    return {}
+def chat(request: ChatRequest):
+    try:
+        prompt = f"""
+You are SimpleLens AI, a privacy assistant.
+
+Answer the user's question using ONLY the provided privacy analysis.
+
+Keep your answer:
+- simple
+- clear
+- helpful
+- easy for non-technical users to understand
+
+Do not make assumptions beyond the analysis.
+
+Formatting rules:
+- Write in short paragraphs.
+- Put a blank line between different ideas.
+- Do not use markdown.
+- Do not use bullet points.
+- Do not use headings.
+- Do not use bold text.
+- Do not write one large block of text.
+
+Privacy Analysis:
+{request.analysis}
+
+User Question:
+{request.question}
+"""
+
+        response = client.chat.completions.create(
+            model=data["model"],
+            temperature=0,
+            messages=[
+                {
+                    "role": "system",
+                    "content": prompt
+                }
+            ]
+        )
+
+        answer = response.choices[0].message.content
+
+        return {
+            "success": True,
+            "answer": answer
+        }
+
+    except Exception as e:
+        return {
+            "success": False,
+            "answer": f"Chatbot error: {e}"
+        }
