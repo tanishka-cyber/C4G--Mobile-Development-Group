@@ -20,6 +20,7 @@ class URLRequest(BaseModel):
 class ChatRequest(BaseModel):
     question: str
     analysis: dict
+    content: str
 
 app = FastAPI()
 
@@ -161,9 +162,6 @@ If something is missing from the policy, mention that it is missing rather than 
 def apiInfo():
     return {"active": True}
 
-
-
-
 def get_color(score: int):
     score = max(0, min(100, score))
 
@@ -261,6 +259,8 @@ def read_item(request: URLRequest):
             "confidence": result["confidence"],
             "privacy_breakdown": result["privacy_breakdown"],
 
+            "document_contents": website_text,
+
             "type": "url",
             "short_score": get_short_score(result["score"]),
             "long_score": result["score_summary"],
@@ -334,6 +334,8 @@ async def read_item(file: UploadFile = File(...)):
             "quick_facts": result["quick_facts"],
             "confidence": result["confidence"],
 
+            "document_contents": text,
+
             "type": "document",
             "short_score": get_short_score(result["score"]),
             "long_score": result["score_summary"],
@@ -387,8 +389,11 @@ Formatting rules:
 - Do not use bold text.
 - Do not write one large block of text.
 
-Privacy Analysis:
+Previous Analysis:
 {request.analysis}
+
+Document Contents:
+{request.content}
 
 User Question:
 {request.question}
