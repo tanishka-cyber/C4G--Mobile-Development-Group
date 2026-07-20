@@ -363,10 +363,12 @@ class AnalysisScreen extends Screen {
 
 		forgetButton.onclick = () => {
 			chrome.storage.session.remove("currentAnalysis");
+			chrome.storage.session.remove("chat");
 
 			removeAnalysisTabs();
 
 			currentAnalysis = {};
+			chat = [];
 
 			alert("Your analysis data has been deleted.");
 
@@ -769,7 +771,3 @@ async function askChatbot(question) {
 		};
 	}
 }
-
-window.addEventListener("unload", () => {
-	chrome.storage.session.remove("currentAnalysis");
-});
