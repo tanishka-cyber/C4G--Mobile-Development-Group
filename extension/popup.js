@@ -59,8 +59,9 @@ class HomeScreen extends Screen {
 			const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 			if (tab?.url) {
 				currentAnalysis = await analyzeURL(tab.url);
+				chat = [];
 				console.log("BACKEND RESPONSE:", currentAnalysis);
-				chrome.storage.session.set({ currentAnalysis: currentAnalysis });
+				chrome.storage.session.set({ currentAnalysis, chat });
 
 				if (currentAnalysis.success) addAnalysisTabs();
 
@@ -109,7 +110,8 @@ class UploadDocumentScreen extends Screen {
 			if (!file) return;
 			loadingScreen.show();
 			currentAnalysis = await analyzeFile(file);
-			chrome.storage.session.set({ currentAnalysis: currentAnalysis });
+			chat = [];
+			chrome.storage.session.set({ currentAnalysis, chat });
 
 			if (currentAnalysis.success) addAnalysisTabs();
 
@@ -133,7 +135,8 @@ class EnterURLScreen extends Screen {
 			removeAnalysisTabs();
 			loadingScreen.show();
 			currentAnalysis = await analyzeURL(urlInput.value);
-			chrome.storage.session.set({ currentAnalysis: currentAnalysis });
+			chat = [];
+			chrome.storage.session.set({ currentAnalysis, chat });
 
 			if (currentAnalysis.success) addAnalysisTabs();
 
