@@ -485,16 +485,11 @@ class BreakdownScreen extends Screen {
 class QuestionsScreen extends Screen {
 	calculateContent() {
 		let contentElement = document.createElement("div");
-		contentElement.className = "page";
+		contentElement.className = "page match-height";
 
 		let title = document.createElement("div");
 		title.className = "page-title";
 		title.textContent = "Ask SimpleLens 🤖";
-
-		let description = document.createElement("div");
-		description.className = "summary";
-		description.textContent =
-			"Ask questions about the privacy policy you just analyzed.";
 
 		let chatBox = document.createElement("div");
 		chatBox.className = "chat-box";
@@ -502,19 +497,24 @@ class QuestionsScreen extends Screen {
 		let messages = document.createElement("div");
 		messages.className = "chat-messages";
 
-		let input = document.createElement("textarea");
+		let inputWrapper = document.createElement("div");
+		inputWrapper.className = "chat-input-wrapper";
 
+		let input = document.createElement("textarea");
 		input.className = "chat-input";
-		input.placeholder = "Example: Can they sell my data?";
+		input.placeholder = "Can they sell my data?";
 
 		let suggestions = [
-			{ text: "Sell my data?", icon: "💰" },
+			{ text: "Can it sell my data?", icon: "💰" },
 			{ text: "What data is collected?", icon: "📋" },
-			{ text: "Delete my account?", icon: "🗑️" },
-			{ text: "Shared with advertisers?", icon: "📢" }
+			{ text: "Steps to delete my account?", icon: "🗑️" },
+			{ text: "Anything shared with advertisers?", icon: "📢" },
+			{ text: "Any glaring red flags?", icon: "🚩" },
+			{ text: "Are they trying to hide anything?", icon: "🔍" }
 		];
 
 		let suggestionBox = document.createElement("div");
+		suggestionBox.className = "suggestion-box";
 		suggestions.forEach((suggestion) => {
 			let button = document.createElement("button");
 			button.className = "suggestion-button";
@@ -529,56 +529,52 @@ class QuestionsScreen extends Screen {
 
 
 		let sendButton = document.createElement("button");
-		sendButton.className = "analyze-button";
-		sendButton.textContent = "Send";
-		
-	sendButton.onclick = async () => {
-		if (!input.value.trim()) return;
+		sendButton.className = "send-button";
+		sendButton.innerHTML = '<i class="fa-solid fa-paper-plane"></i>';
 
-		suggestionBox.style.display = "none";
+		sendButton.onclick = async () => {
+			if (!input.value.trim()) return;
 
-		let question = input.value;
+			suggestionBox.style.display = "none";
 
-		let userMessage = document.createElement("div");
-		userMessage.className = "chat-user-message";
-		userMessage.textContent = question;
+			let question = input.value;
 
-		messages.appendChild(userMessage);
+			let userMessage = document.createElement("div");
+			userMessage.className = "chat-user-message";
+			userMessage.textContent = question;
 
-		input.value = "";
+			messages.appendChild(userMessage);
 
-		let loadingMessage = document.createElement("div");
-		loadingMessage.className = "typing-indicator";
+			input.value = "";
 
-		loadingMessage.innerHTML = `
-			<span></span>
-			<span></span>
-			<span></span>
-		`;
+			let loadingMessage = document.createElement("div");
+			loadingMessage.className = "typing-indicator";
 
-		messages.appendChild(loadingMessage);
+			loadingMessage.innerHTML = `<span></span><span></span><span></span>`;
 
-		let response = await askChatbot(question);
+			messages.appendChild(loadingMessage);
 
-		loadingMessage.remove();
+			let response = await askChatbot(question);
 
-		let aiMessage = document.createElement("div");
-		aiMessage.className = "chat-ai-message";
-		aiMessage.innerText = response.answer || "No response received.";
+			loadingMessage.remove();
 
-		messages.appendChild(aiMessage);
+			let aiMessage = document.createElement("div");
+			aiMessage.className = "chat-ai-message";
+			aiMessage.innerText = response.answer || "No response received.";
 
-		messages.scrollTop = messages.scrollHeight;
-	};
+			messages.appendChild(aiMessage);
+
+			messages.scrollTop = messages.scrollHeight;
+		};
 
 		chatBox.appendChild(messages);
-		chatBox.appendChild(input);
-		chatBox.appendChild(sendButton);
-
+		inputWrapper.appendChild(input);
+		inputWrapper.appendChild(sendButton);
+		
 		contentElement.appendChild(title);
-		contentElement.appendChild(description);
 		contentElement.appendChild(suggestionBox);
 		contentElement.appendChild(chatBox);
+		contentElement.appendChild(inputWrapper);
 
 		return contentElement;
 	}
@@ -687,7 +683,7 @@ function addAnalysisTabs() {
 
 
 function removeAnalysisTabs() {
-    tabsElement.classList.remove("show-dynamic");
+	tabsElement.classList.remove("show-dynamic");
 }
 
 

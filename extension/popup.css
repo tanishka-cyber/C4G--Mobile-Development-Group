@@ -58,6 +58,7 @@ body {
     padding: 8px 4px;
     transition: .25s background-color;
     width: 100%;
+    height: 60px;
 }
 
 .tab:hover {
@@ -117,6 +118,10 @@ body {
     align-items: center;
     gap: 20px;
     min-height: 100%;
+}
+
+.page.match-height {
+    height: 100%;
 }
 
 .home-buttons {
@@ -389,10 +394,15 @@ body {
     flex-direction: column;
     gap: 10px;
     width: 100%;
+    flex: 1;
+    min-height: 0;
+}
+
+.chat-box:has(.chat-messages:empty) {
+    display: none;
 }
 
 .chat-messages {
-    height: 220px;
     overflow-y: auto;
     border: 2px solid #202024;
     border-radius: 8px;
@@ -426,7 +436,6 @@ body {
 
 .chat-input {
     width: 100%;
-    min-height: 60px;
     padding: 10px;
     border-radius: 8px;
     border: 2px solid #202024;
@@ -434,18 +443,18 @@ body {
     color: white;
     resize: none;
     font-size: 1rem;
+    field-sizing: content;
+    overflow-y: hidden;
 }
 
 .chat-input::placeholder {
     color: #aaaaaa;
-    padding: 8px;
 }
 
 .suggestion-box {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin: 15px 0;
 }
 
 .suggestion-button {
@@ -502,4 +511,39 @@ body {
         transform: translateY(-5px);
         opacity: 1;
     }
+}
+
+.send-button {
+    border-radius: 1000px;
+    background-color: #1a53ac;
+    display: flex;
+    color: white;
+    font-size: 1.4rem;
+    align-items: center;
+    justify-content: center;
+    transition: background-color .25s, scale .1s;
+    height: 40px;
+    width: 40px;
+    align-self: end;
+}
+
+.send-button:active {
+    scale: .9;
+}
+
+.send-button:hover {
+    background-color: color-mix(in srgb, 70% #1a53ac, black);
+}
+
+.chat-input-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 40px;
+    gap: 8px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    background-color: #2228;
+    margin-inline: -20px;
+    margin-bottom: -20px;
+    width: calc(100% + 40px);
+    margin-top: auto;
 }
