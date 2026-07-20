@@ -521,7 +521,7 @@ class QuestionsScreen extends Screen {
 		input.placeholder = "Can they sell my data?";
 
 		let suggestions = [
-			{ text: "Can it sell my data?", icon: "💰" },
+			{ text: "Can they sell my data?", icon: "💰" },
 			{ text: "What data is collected?", icon: "📋" },
 			{ text: "Steps to delete my account?", icon: "🗑️" },
 			{ text: "Anything shared with advertisers?", icon: "📢" },
@@ -754,6 +754,9 @@ async function askChatbot(question) {
 	try {
 		let api = apiURL + "/chat/";
 
+		let tempAnalysis = structuredClone(currentAnalysis);
+		delete tempAnalysis.document_contents;
+
 		let res = await fetch(api, {
 			method: "POST",
 			headers: {
@@ -761,7 +764,8 @@ async function askChatbot(question) {
 			},
 			body: JSON.stringify({
 				question: question,
-				analysis: currentAnalysis
+				analysis: tempAnalysis,
+				content: currentAnalysis.document_contents
 			})
 		});
 
